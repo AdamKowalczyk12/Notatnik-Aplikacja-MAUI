@@ -1,0 +1,113 @@
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewModels="clr-namespace:Notes.ViewModels"
+             xmlns:Converters="clr-namespace:Notes.Models.Converters"
+             x:Class="Notes.Views.AllNotesPage"
+             Title="Twoje Notatki"
+             xmlns:fonts="clr-namespace:Notes.Models.Helpers"
+             BackgroundColor="#3E8EED"
+             NavigatedTo="ContentPage_NavigatedTo"
+             >
+    
+    <ContentPage.BindingContext>
+        <viewModels:NotesViewModel />
+    </ContentPage.BindingContext>
+
+    <!-- Add an item to the toolbar -->
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="Dodaj" Command="{Binding NewNoteClickedCommand}" IconImageSource="{FontImage Glyph='+', Color={StaticResource Primary}, Size=22}" />
+    </ContentPage.ToolbarItems>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <StackLayout>
+            <StackLayout Orientation="Horizontal" VerticalOptions="Center" Spacing="15" Margin="10,0,0,0">
+                <Label Text="Liczba Notatek: " TextColor="White" FontSize="20"/>
+                <Label Text="{Binding AllNotes.Count}" FontSize="20" TextColor="White"/>
+            </StackLayout>
+            <StackLayout Orientation="Horizontal" VerticalOptions="Center" Spacing="15" Margin="10,0,0,0">
+                <Label Text="Widok Poziomy: " TextColor="White" VerticalOptions="Center" VerticalTextAlignment="Center" FontSize="20"/>
+                <Switch IsToggled="{Binding IsHorizontalThemeEnabled, Mode=TwoWay}"/>
+            </StackLayout>
+        </StackLayout>
+        <!-- Display notes in a list -->
+        <CollectionView x:Name="notesCollection"
+                Grid.Row="1"
+                ItemsSource="{Binding AllNotes}"
+                Margin="20"
+                SelectionMode="Single"
+                SelectionChangedCommand="{Binding NoteSelectedCommand}"
+                SelectionChangedCommandParameter="{Binding Source={RelativeSource Self}, Path=SelectedItem}">
+            <CollectionView.IsVisible>
+                <Binding Path="IsHorizontalThemeEnabled">
+                    <Binding.Converter>
+                        <Converters:BooleanInverseConverter/>
+                    </Binding.Converter>
+                </Binding>
+            </CollectionView.IsVisible>
+            
+            <!-- Designate how the collection of items are laid out -->
+            <CollectionView.ItemsLayout>
+                <LinearItemsLayout Orientation="Vertical" ItemSpacing="10" />
+            </CollectionView.ItemsLayout>
+
+            <!-- Define the appearance of each item in the list -->
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <StackLayout BackgroundColor="White" >
+                        <Label FontSize="22" Margin="10,0,0,0">
+                            <Label.Text> 
+                                <Binding Path="Text">
+                                    <Binding.Converter>
+                                        <Converters:NoteTitleConverter>
+                                        </Converters:NoteTitleConverter>
+                                    </Binding.Converter>
+                                </Binding>
+                            </Label.Text>
+                        </Label>
+                        <Label Margin="10,0,0,0" Text="{Binding CreatingDate}" FontSize="14" TextColor="Silver"/>
+                    </StackLayout>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+        <StackLayout IsVisible="{Binding IsHorizontalThemeEnabled}"
+            Grid.Row="1">
+            <FlexLayout 
+                 
+                BindableLayout.ItemsSource="{Binding AllNotes}"
+                Wrap="Wrap"
+                AlignItems="Start">
+                <BindableLayout.ItemTemplate>
+                    <DataTemplate>
+                        <Grid>
+                            <Grid.GestureRecognizers>
+                                <TapGestureRecognizer 
+                                    Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage} }, Path=BindingContext.NoteSelectedCommand}"
+                                    CommandParameter="{Binding}"/>
+                            </Grid.GestureRecognizers>
+                            <Frame>
+                                <StackLayout>
+                                    <Label FontSize="22">
+                                        <Label.Text>
+                                            <Binding Path="Text">
+                                                <Binding.Converter>
+                                                    <Converters:NoteTitleConverter>
+                                                    </Converters:NoteTitleConverter>
+                                                </Binding.Converter>
+                                            </Binding>
+                                        </Label.Text>
+                                    </Label>
+                                    <Label Text="{Binding CreatingDate}" FontSize="14" TextColor="Silver"/>
+                                </StackLayout>
+                            </Frame>
+                        </Grid>
+                    </DataTemplate>
+                </BindableLayout.ItemTemplate>
+            </FlexLayout>
+        </StackLayout>
+        <Button Grid.RowSpan="2" VerticalOptions="Start" HorizontalOptions="End" Text="{Static fonts:FaSolid.Plus}" FontFamily="FaSolid" Margin="0,0,15,10" Command="{Binding NewNoteClickedCommand}"/>
+    </Grid>
+</ContentPage>
